@@ -11,6 +11,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <lumi.path>${project.basedir}/../../Servers/lumi-server/Lumi-1.6.0.jar</lumi.path>
+        <luckperms.path>${project.basedir}/../../Servers/lumi-server/plugins/LuckPerms-Nukkit-5.5.55.jar</luckperms.path>
     </properties>
 
     <build>
@@ -33,14 +35,14 @@
             <artifactId>nukkit</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../../Servers/lumi-server/Lumi-1.6.0.jar</systemPath>
+            <systemPath>${lumi.path}</systemPath>
         </dependency>
         <dependency>
             <groupId>net.luckperms</groupId>
             <artifactId>luckperms-nukkit</artifactId>
             <version>5.5.55</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../../Servers/lumi-server/plugins/LuckPerms-Nukkit-5.5.55.jar</systemPath>
+            <systemPath>${luckperms.path}</systemPath>
         </dependency>
     </dependencies>
 </project>

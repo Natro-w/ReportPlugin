@@ -1,0 +1,7 @@
+# Discord Webhook URL for report notifications
+# Leave empty to disable Discord integration
+discord-webhook: ""
+
+# Lobby world name for teleporting staff after investigation
+# Leave empty to use default world spawn
+lobby-world: ""

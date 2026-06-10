@@ -61,10 +61,10 @@ public class ReportListener implements Listener {
         // ===== Reports Dashboard =====
         if (title.contains("Reports Dashboard")) {
             switch (clicked) {
-                case 0: plugin.openReportListForm(player, "OPEN"); break;
-                case 1: plugin.openReportListForm(player, "CLAIMED"); break;
-                case 2: plugin.openReportListForm(player, "RESOLVED"); break;
-                case 3: plugin.openReportListForm(player, "REJECTED"); break;
+                case 0: plugin.openReportListForm(player, ReportStatus.OPEN); break;
+                case 1: plugin.openReportListForm(player, ReportStatus.CLAIMED); break;
+                case 2: plugin.openReportListForm(player, ReportStatus.RESOLVED); break;
+                case 3: plugin.openReportListForm(player, ReportStatus.REJECTED); break;
                 case 4: openSearchForm(player); break;
             }
             return;
@@ -72,11 +72,11 @@ public class ReportListener implements Listener {
 
         // ===== Report List (by status) =====
         if (title.contains("Reports") || title.contains("Open") || title.contains("Claimed") || title.contains("Resolved") || title.contains("Rejected")) {
-            String status = null;
-            if (title.contains("Open")) status = "OPEN";
-            else if (title.contains("Claimed")) status = "CLAIMED";
-            else if (title.contains("Resolved")) status = "RESOLVED";
-            else if (title.contains("Rejected")) status = "REJECTED";
+            ReportStatus status = null;
+            if (title.contains("Open")) status = ReportStatus.OPEN;
+            else if (title.contains("Claimed")) status = ReportStatus.CLAIMED;
+            else if (title.contains("Resolved")) status = ReportStatus.RESOLVED;
+            else if (title.contains("Rejected")) status = ReportStatus.REJECTED;
 
             if (status != null) {
                 List<ReportData> list = plugin.getStorage().getReportsByStatus(status);
@@ -185,7 +185,7 @@ public class ReportListener implements Listener {
             form.addButton(new ElementButton("§cNo results found\n§7Click to go back"));
         } else {
             for (ReportData rd : results) {
-                String text = "§7#" + rd.id + " §e" + rd.target + "\n§7" + rd.reason + " §8- " + rd.status;
+                String text = "§7#" + rd.id + " §e" + rd.target + "\n§7" + rd.reason + " §8- " + rd.status.toColoredDisplay();
                 form.addButton(new ElementButton(text));
             }
         }
@@ -198,7 +198,7 @@ public class ReportListener implements Listener {
         player.sendMessage("§7Reporter: §e" + rd.reporter);
         player.sendMessage("§7Target: §e" + rd.target);
         player.sendMessage("§7Reason: §e" + rd.reason);
-        player.sendMessage("§7Status: " + statusColor(rd.status) + rd.status);
+        player.sendMessage("§7Status: " + rd.status.toColoredDisplay());
         player.sendMessage("§7World: §e" + rd.world);
         player.sendMessage("§7Time: §e" + Storage.formatTimestamp(rd.timestamp));
         if (!rd.handledBy.isEmpty()) {
@@ -242,13 +242,5 @@ public class ReportListener implements Listener {
         plugin.getVanishManager().cleanup(event.getPlayer());
     }
 
-    private String statusColor(String status) {
-        switch (status) {
-            case "OPEN": return "§e";
-            case "CLAIMED": return "§b";
-            case "RESOLVED": return "§a";
-            case "REJECTED": return "§c";
-            default: return "§7";
-        }
-    }
+
 }

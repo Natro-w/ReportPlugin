@@ -146,7 +146,7 @@ public class ReportPlugin extends PluginBase {
                 if (list.isEmpty()) { p.sendMessage("§7No reports found for §e" + target + "§7 (" + mode + ")."); return true; }
                 p.sendMessage("§l§6=== Reports " + (mode.equals("send") ? "by" : "on") + " " + target + " (" + list.size() + ") ===");
                 for (ReportData rd : list) {
-                    p.sendMessage("§7#" + rd.id + " §e" + rd.reason + " §7- " + rd.status + " §7- " + Storage.formatTimestamp(rd.timestamp) + " §7- " + rd.world);
+                    p.sendMessage("§7#" + rd.id + " §e" + rd.reason + " §7- " + rd.status.toColoredDisplay() + " §7- " + Storage.formatTimestamp(rd.timestamp) + " §7- " + rd.world);
                     if (mode.equals("send")) {
                         p.sendMessage("  §7Target: §e" + rd.target);
                     } else {
@@ -267,14 +267,14 @@ public class ReportPlugin extends PluginBase {
         player.showFormWindow(form);
     }
 
-    public void openReportListForm(Player player, String status) {
+    public void openReportListForm(Player player, ReportStatus status) {
         List<ReportData> list = storage.getReportsByStatus(status);
         String title;
         switch (status) {
-            case "OPEN": title = "§eOpen Reports"; break;
-            case "CLAIMED": title = "§bClaimed Reports"; break;
-            case "RESOLVED": title = "§aResolved Reports"; break;
-            case "REJECTED": title = "§cRejected Reports"; break;
+            case OPEN: title = "§eOpen Reports"; break;
+            case CLAIMED: title = "§bClaimed Reports"; break;
+            case RESOLVED: title = "§aResolved Reports"; break;
+            case REJECTED: title = "§cRejected Reports"; break;
             default: title = "§7Reports";
         }
         FormWindowSimple form = new FormWindowSimple(title + " §7(" + list.size() + ")", "§7Click to view details:");
@@ -316,7 +316,7 @@ public class ReportPlugin extends PluginBase {
     public void startInvestigation(Player staff, int reportId) {
         ReportData rd = storage.getReport(reportId);
         if (rd == null) { staff.sendMessage("§cReport #" + reportId + " not found."); return; }
-        if (!rd.status.equals("OPEN")) { staff.sendMessage("§cReport #" + reportId + " is already " + rd.status.toLowerCase() + "."); return; }
+        if (rd.status != ReportStatus.OPEN) { staff.sendMessage("§cReport #" + reportId + " is already " + rd.status.name().toLowerCase() + "."); return; }
 
         if (!storage.claimReport(reportId, staff.getName())) { staff.sendMessage("§cCould not claim report."); return; }
 

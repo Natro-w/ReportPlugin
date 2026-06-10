@@ -34,9 +34,9 @@ public class DiscordWebhook {
     public void sendResolution(ReportData rd) {
         if (url == null || url.isEmpty()) return;
 
-        String color = rd.status.equals("RESOLVED") ? "65280" : "16711680";
+        String color = rd.status == ReportStatus.RESOLVED ? "65280" : "16711680";
         String json = "{\"embeds\":[{" +
-            "\"title\":\"Report #" + rd.id + " " + rd.status + "\"," +
+            "\"title\":\"Report #" + rd.id + " " + rd.status.name() + "\"," +
             "\"color\":" + color + "," +
             "\"fields\":[" +
             "{\"name\":\"Reporter\",\"value\":\"" + escape(rd.reporter) + "\",\"inline\":true}," +

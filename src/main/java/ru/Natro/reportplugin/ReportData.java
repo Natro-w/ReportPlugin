@@ -5,7 +5,7 @@ public class ReportData {
     public String reporter;
     public String target;
     public String reason;
-    public String status; // OPEN, CLAIMED, RESOLVED, REJECTED
+    public ReportStatus status;
     public long timestamp;
     public String world;
     public String handledBy;
@@ -22,7 +22,7 @@ public class ReportData {
         this.reporter = reporter;
         this.target = target;
         this.reason = reason;
-        this.status = "OPEN";
+        this.status = ReportStatus.OPEN;
         this.timestamp = System.currentTimeMillis() / 1000;
         this.world = world;
         this.handledBy = "";

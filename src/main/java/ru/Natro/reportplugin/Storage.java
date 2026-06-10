@@ -23,8 +23,6 @@ public class Storage {
         loadAll();
     }
 
-    // ========== REPORTS ==========
-
     public synchronized int createReport(String reporter, String target, String reason, String world) {
         int id = nextId++;
         ReportData rd = new ReportData(id, reporter, target, reason, world);
@@ -37,8 +35,8 @@ public class Storage {
         return reports.stream().filter(r -> r.id == id).findFirst().orElse(null);
     }
 
-    public synchronized List<ReportData> getReportsByStatus(String status) {
-        return reports.stream().filter(r -> r.status.equals(status)).collect(Collectors.toList());
+    public synchronized List<ReportData> getReportsByStatus(ReportStatus status) {
+        return reports.stream().filter(r -> r.status == status).collect(Collectors.toList());
     }
 
     public synchronized List<ReportData> getReportsByReporter(String player) {
@@ -65,8 +63,8 @@ public class Storage {
 
     public synchronized boolean claimReport(int id, String staffName) {
         ReportData rd = getReport(id);
-        if (rd == null || !rd.status.equals("OPEN")) return false;
-        rd.status = "CLAIMED";
+        if (rd == null || rd.status != ReportStatus.OPEN) return false;
+        rd.status = ReportStatus.CLAIMED;
         rd.handledBy = staffName;
         rd.startedAt = System.currentTimeMillis() / 1000;
         saveReports();
@@ -75,8 +73,8 @@ public class Storage {
 
     public synchronized boolean resolveReport(int id, boolean confirmed, String result, String punishment, long duration) {
         ReportData rd = getReport(id);
-        if (rd == null || !rd.status.equals("CLAIMED")) return false;
-        rd.status = confirmed ? "RESOLVED" : "REJECTED";
+        if (rd == null || rd.status != ReportStatus.CLAIMED) return false;
+        rd.status = confirmed ? ReportStatus.RESOLVED : ReportStatus.REJECTED;
         rd.endedAt = System.currentTimeMillis() / 1000;
         rd.result = result;
         rd.punishment = punishment;
@@ -107,22 +105,20 @@ public class Storage {
     }
 
     public synchronized int getOpenCount() {
-        return (int) reports.stream().filter(r -> r.status.equals("OPEN")).count();
+        return (int) reports.stream().filter(r -> r.status == ReportStatus.OPEN).count();
     }
 
     public synchronized int getClaimedCount() {
-        return (int) reports.stream().filter(r -> r.status.equals("CLAIMED")).count();
+        return (int) reports.stream().filter(r -> r.status == ReportStatus.CLAIMED).count();
     }
 
     public synchronized int getResolvedCount() {
-        return (int) reports.stream().filter(r -> r.status.equals("RESOLVED")).count();
+        return (int) reports.stream().filter(r -> r.status == ReportStatus.RESOLVED).count();
     }
 
     public synchronized int getRejectedCount() {
-        return (int) reports.stream().filter(r -> r.status.equals("REJECTED")).count();
+        return (int) reports.stream().filter(r -> r.status == ReportStatus.REJECTED).count();
     }
-
-    // ========== REASONS ==========
 
     public synchronized List<ReportReason> getReasons() {
         return new ArrayList<>(reasons);
@@ -142,8 +138,6 @@ public class Storage {
         reasons.removeIf(r -> r.reason.equalsIgnoreCase(reason));
         saveReasons();
     }
-
-    // ========== STAFF STATS ==========
 
     public synchronized StaffStatsData getStaffStats(String uuid) {
         return stats.computeIfAbsent(uuid, StaffStatsData::new);
@@ -167,14 +161,11 @@ public class Storage {
     }
 
     private String resolveStaffUuid(String name) {
-        // Find UUID by player name, fallback to name itself
         if (ReportPlugin.get().getServer().getOnlinePlayers().containsKey(name)) {
             return ReportPlugin.get().getServer().getOnlinePlayers().get(name).getUniqueId().toString();
         }
         return name;
     }
-
-    // ========== I/O ==========
 
     @SuppressWarnings("unchecked")
     private void loadAll() {
@@ -182,10 +173,8 @@ public class Storage {
         reasonConfig = new Config(new File(dataDir, "reasons.json"), Config.JSON);
         statsConfig = new Config(new File(dataDir, "stats.json"), Config.JSON);
 
-        // Load nextId
         nextId = reportConfig.getInt("nextId", 1);
 
-        // Load reports
         List<Map<String, Object>> rawReports = (List<Map<String, Object>>) reportConfig.getList("reports", new ArrayList<>());
         for (Map<String, Object> m : rawReports) {
             ReportData rd = new ReportData();
@@ -193,7 +182,7 @@ public class Storage {
             rd.reporter = (String) m.getOrDefault("reporter", "");
             rd.target = (String) m.getOrDefault("target", "");
             rd.reason = (String) m.getOrDefault("reason", "");
-            rd.status = (String) m.getOrDefault("status", "OPEN");
+            rd.status = ReportStatus.fromName((String) m.getOrDefault("status", "OPEN"));
             rd.timestamp = ((Number) m.getOrDefault("timestamp", 0L)).longValue();
             rd.world = (String) m.getOrDefault("world", "");
             rd.handledBy = (String) m.getOrDefault("handledBy", "");
@@ -205,7 +194,6 @@ public class Storage {
             reports.add(rd);
         }
 
-        // Load reasons
         List<Map<String, Object>> rawReasons = (List<Map<String, Object>>) reasonConfig.getList("reasons", new ArrayList<>());
         for (Map<String, Object> m : rawReasons) {
             String reason = (String) m.getOrDefault("reason", "");
@@ -213,7 +201,6 @@ public class Storage {
             reasons.add(new ReportReason(reason, duration));
         }
 
-        // Load stats
         Map<String, Object> rawStats = (Map<String, Object>) statsConfig.get("stats");
         if (rawStats != null) {
             for (Map.Entry<String, Object> entry : rawStats.entrySet()) {
@@ -236,7 +223,7 @@ public class Storage {
             m.put("reporter", rd.reporter);
             m.put("target", rd.target);
             m.put("reason", rd.reason);
-            m.put("status", rd.status);
+            m.put("status", rd.status.name());
             m.put("timestamp", rd.timestamp);
             m.put("world", rd.world);
             m.put("handledBy", rd.handledBy);
@@ -278,8 +265,6 @@ public class Storage {
         statsConfig.set("stats", rawStats);
         statsConfig.save();
     }
-
-    // ========== UTILITY ==========
 
     private static Map<String, Integer> sortByValueDesc(Map<String, Integer> map, int limit) {
         return map.entrySet().stream()
